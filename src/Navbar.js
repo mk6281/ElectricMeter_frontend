@@ -412,10 +412,9 @@
 //   );
 // }
 
-// export default Navbar;
-import React, { useEffect, useState, useRef } from 'react';
+// export default Navbar;import React, { useEffect, useState, useRef } from 'react';
 import ReactDOM from 'react-dom';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 function Navbar() {
@@ -427,97 +426,64 @@ function Navbar() {
   const avatarRef = useRef(null);
   const dropdownRef = useRef(null);
 
+  // Fetch User
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem('user'));
     if (storedUser) {
-      axios.get(`https://electricmeter-backend-1.onrender.com/getUser/${storedUser.id}`)
-        .then(res => {
+      axios
+        .get(`https://electricmeter-backend-1.onrender.com/getUser/${storedUser.id}`)
+        .then((res) => {
           if (res.data.status === 'Found') {
             setUser(res.data.user);
             localStorage.setItem('user', JSON.stringify(res.data.user));
           }
         })
-        .catch(err => console.log("Fetch user error:", err));
+        .catch((err) => console.log("Fetch user error:", err));
     }
   }, []);
 
-  // click-outside handler (closes dropdown when clicking anywhere else)
+  // Click Outside Dropdown
   useEffect(() => {
     function handleDocClick(e) {
       if (!dropdownOpen) return;
-      // if click is inside avatar or dropdown, keep open
-      if (
-        avatarRef.current && avatarRef.current.contains(e.target)
-      ) {
-        return;
-      }
-      if (
-        dropdownRef.current && dropdownRef.current.contains(e.target)
-      ) {
-        return;
-      }
+      if (avatarRef.current && avatarRef.current.contains(e.target)) return;
+      if (dropdownRef.current && dropdownRef.current.contains(e.target)) return;
       setDropdownOpen(false);
     }
     document.addEventListener('mousedown', handleDocClick);
-    document.addEventListener('touchstart', handleDocClick);
-    return () => {
-      document.removeEventListener('mousedown', handleDocClick);
-      document.removeEventListener('touchstart', handleDocClick);
-    };
+    return () => document.removeEventListener('mousedown', handleDocClick);
   }, [dropdownOpen]);
 
   const handleSignOut = () => {
     localStorage.removeItem('user');
     setUser(null);
-    setDropdownOpen(false);
     navigate('/');
   };
 
   const toggleDropdown = () => {
-    setDropdownOpen((s) => !s);
-    setMobileMenuOpen(false); // close mobile menu when opening dropdown
+    setDropdownOpen((prev) => !prev);
+    setMobileMenuOpen(false);
   };
+
   const toggleMobileMenu = () => {
-    setMobileMenuOpen((s) => !s);
-    setDropdownOpen(false); // close dropdown when opening mobile menu
+    setMobileMenuOpen((prev) => !prev);
+    setDropdownOpen(false);
   };
 
   const getUserInitials = (name) =>
-    name ? name.split(' ').map(n => n[0].toUpperCase()).join('') : '';
+    name ? name.split(' ').map((n) => n[0].toUpperCase()).join('') : '';
 
-  // Dropdown portal content
-  const DropdownPortal = ({ children, position }) => {
-    // position: {top, left} in px for absolute placement
-    const style = {
-      position: 'absolute',
-      top: position?.top ?? 0,
-      left: position?.left ?? 0,
-      zIndex: 2147483647, // extremely high to avoid stacking issues
-    };
-    return ReactDOM.createPortal(
-      <div style={style}>{children}</div>,
-      document.body
-    );
-  };
-
-  // compute dropdown coordinates relative to viewport
   const computeDropdownPosition = () => {
     if (!avatarRef.current) return { top: 0, left: 0 };
     const rect = avatarRef.current.getBoundingClientRect();
-    // place dropdown under avatar, aligned to right edge
-    const top = rect.bottom + 8; // 8px gap
-    const right = window.innerWidth - rect.right;
-    // We'll set left so that dropdown's right aligns with avatar's right.
-    // But since we don't know dropdown width, we'll position using right via CSS transform:
-    // Instead, compute left = rect.right - dropdownWidth; but to keep simple, we'll position by left = rect.left
-    return { top, left: rect.right - 170 }; // 170 ~ min-width of dropdown
+    return { top: rect.bottom + 8, left: rect.right - 170 };
   };
 
   const dropdownPos = computeDropdownPosition();
 
   return (
     <>
-      {/* Inline CSS */}
+      {/* Styles */}
       <style>{`
         .navbar-container {
           display: flex;
@@ -529,165 +495,205 @@ function Navbar() {
           font-size: 18px;
           position: sticky;
           top: 0;
-          z-index: 2000;
+          z-index: 3000;
           box-shadow: 0px 4px 15px rgba(0,0,0,0.2);
-          overflow: visible; /* ensure parent doesn't clip */
         }
+
         .navbar-logo {
           font-size: 24px;
           font-weight: 900;
           cursor: pointer;
-          text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
         }
+
         .navbar-links {
           display: flex;
           gap: 20px;
-          align-items: center;
         }
+
         .navbar-link {
-          color: #fff;
+          color: white;
           text-decoration: none;
           padding: 6px 10px;
           border-radius: 6px;
+          transition: 0.2s;
         }
-        .navbar-link:hover { background: rgba(255,255,255,0.12); }
+
+        .navbar-link:hover {
+          background: rgba(255,255,255,0.15);
+        }
+
+        .nav-right {
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          margin-left: auto; /* fixes avatar alignment */
+        }
+
         .navbar-avatar {
           width: 40px;
           height: 40px;
+          background: #ffcc00;
           border-radius: 50%;
-          background: #ffb300;
-          color: #000;
-          font-weight: 700;
           display: flex;
-          align-items: center;
           justify-content: center;
+          align-items: center;
+          font-weight: bold;
+          color: black;
           cursor: pointer;
+          transition: 0.3s;
         }
+
+        .navbar-avatar:hover {
+          transform: scale(1.08);
+        }
+
         .mobile-menu-icon {
           display: none;
-          font-size: 26px;
+          font-size: 28px;
           cursor: pointer;
         }
 
-        /* mobile menu */
+        /* MOBILE MENU */
         .mobile-menu {
-          display: none;
           position: absolute;
           top: 64px;
           right: 12px;
           background: linear-gradient(180deg, #0A2A66, #1e88e5);
-          color: white;
-          padding: 14px;
+          padding: 15px;
           border-radius: 12px;
-          box-shadow: 0 8px 30px rgba(0,0,0,0.25);
-          z-index: 1500;
-          min-width: 180px;
+          width: 180px;
+          color: white;
+          box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+          z-index: 3500;
         }
+
         .mobile-link {
           color: white;
           display: block;
-          padding: 8px 6px;
+          padding: 10px 0;
+          text-decoration: none;
         }
-        .mobile-link:hover { color: #f5d142; }
 
-        /* responsive */
+        .mobile-link:hover {
+          color: #ffd447;
+        }
+
         @media (max-width: 768px) {
-          .navbar-links { display: none; }
-          .mobile-menu-icon { display: block; color: white; }
+          .navbar-links {
+            display: none;
+          }
+          .mobile-menu-icon {
+            display: block;
+          }
         }
 
-        /* dropdown portal card */
+        /* DROPDOWN */
         .dropdown-card {
-          min-width: 160px;
           background: white;
-          color: #222;
           border-radius: 10px;
-          box-shadow: 0 8px 30px rgba(0,0,0,0.25);
-          overflow: hidden;
+          box-shadow: 0px 8px 30px rgba(0,0,0,0.25);
+          min-width: 160px;
         }
+
         .dropdown-item {
           padding: 12px 14px;
           cursor: pointer;
-          border: none;
           background: none;
+          border: none;
           width: 100%;
           text-align: left;
         }
-        .dropdown-item:hover { background: #f3f4f6; }
+
+        .dropdown-item:hover {
+          background: #f3f4f6;
+        }
       `}</style>
 
-      <nav className="navbar-container" role="navigation" aria-label="Main">
-        <div className="navbar-logo" onClick={() => navigate('/home')}>NEB Portal</div>
+      {/* NAVBAR */}
+      <nav className="navbar-container">
+        <div className="navbar-logo" onClick={() => navigate('/home')}>
+          NEB Portal
+        </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          {/* Desktop links */}
-          <div className="navbar-links" role="menubar">
-            <a className="navbar-link" href="/home">Home</a>
-            {user && <>
-              <a className="navbar-link" href={`/home/billing/${user.id}`}>Billing</a>
-              <a className="navbar-link" href={`/home/usage/${user.id}`}>Usage</a>
-            </>}
-            <a className="navbar-link" href="/home/history">History</a>
-          </div>
+        {/* DESKTOP LINKS */}
+        <div className="navbar-links">
+          <Link className="navbar-link" to="/home">Home</Link>
 
-          {/* Avatar */}
           {user && (
-            <div ref={avatarRef} style={{ position: 'relative' }}>
-              <div
-                className="navbar-avatar"
-                onClick={toggleDropdown}
-                aria-haspopup="true"
-                aria-expanded={dropdownOpen}
-              >
+            <>
+              <Link className="navbar-link" to={`/home/billing/${user.id}`}>Billing</Link>
+              <Link className="navbar-link" to={`/home/usage/${user.id}`}>Usage</Link>
+            </>
+          )}
+
+          <Link className="navbar-link" to="/home/history">History</Link>
+        </div>
+
+        {/* AVATAR + MOBILE ICON */}
+        <div className="nav-right">
+
+          {user && (
+            <div ref={avatarRef}>
+              <div className="navbar-avatar" onClick={toggleDropdown}>
                 {getUserInitials(user.name)}
               </div>
             </div>
           )}
 
-          {/* Mobile menu icon */}
-          <div className="mobile-menu-icon" onClick={toggleMobileMenu} aria-label="Toggle menu">☰</div>
+          <div className="mobile-menu-icon" onClick={toggleMobileMenu}>
+            ☰
+          </div>
+
         </div>
       </nav>
 
-      {/* Mobile menu (rendered inline but high z-index) */}
+      {/* MOBILE MENU */}
       {mobileMenuOpen && (
-        <div className="mobile-menu" role="menu">
-          <a className="mobile-link" href="/home">Home</a>
-          {user && <>
-            <a className="mobile-link" href={`/home/billing/${user.id}`}>Billing</a>
-            <a className="mobile-link" href={`/home/usage/${user.id}`}>Usage</a>
-          </>}
-          <a className="mobile-link" href="/home/history">History</a>
-          {user && <button className="mobile-link" onClick={handleSignOut} style={{ background: 'none', border: 0, padding: 0 }}>Sign Out</button>}
+        <div className="mobile-menu">
+          <Link className="mobile-link" to="/home">Home</Link>
+
+          {user && (
+            <>
+              <Link className="mobile-link" to={`/home/billing/${user.id}`}>Billing</Link>
+              <Link className="mobile-link" to={`/home/usage/${user.id}`}>Usage</Link>
+            </>
+          )}
+
+          <Link className="mobile-link" to="/home/history">History</Link>
+
+          {user && (
+            <button
+              className="mobile-link"
+              onClick={handleSignOut}
+              style={{ background: "none", border: 0, padding: 0 }}
+            >
+              Sign Out
+            </button>
+          )}
         </div>
       )}
 
-      {/* Dropdown rendered via Portal so it cannot be clipped */}
-      {dropdownOpen && user && ReactDOM.createPortal(
-        <div
-          ref={dropdownRef}
-          className="dropdown-card"
-          style={{
-            position: 'absolute',
-            top: dropdownPos.top + 'px',
-            left: dropdownPos.left + 'px',
-            zIndex: 2147483647
-          }}
-          role="menu"
-        >
-          {/* <button className="dropdown-item" onClick={() => { setDropdownOpen(false); navigate('/profile'); }}>
-            Profile
-          </button> */}
-          <button className="dropdown-item" onClick={handleSignOut}>
-            Sign Out
-          </button>
-        </div>,
-        document.body
-      )}
+      {/* DROPDOWN */}
+      {dropdownOpen && user &&
+        ReactDOM.createPortal(
+          <div
+            ref={dropdownRef}
+            className="dropdown-card"
+            style={{
+              position: 'absolute',
+              top: dropdownPos.top,
+              left: dropdownPos.left,
+              zIndex: 999999999,
+            }}
+          >
+            <button className="dropdown-item" onClick={handleSignOut}>
+              Sign Out
+            </button>
+          </div>,
+          document.body
+        )}
     </>
   );
 }
 
 export default Navbar;
-
-
