@@ -106,7 +106,7 @@ function Homeadmin() {
     }
 
     axios
-      .get(`http://localhost:8081/getUser/${id}`)
+      .get(`https://electricmeter-backend-1.onrender.com/getUser/${id}`)
       .then((res) => {
         if (res.data.status === "Found") {
           localStorage.setItem("selectedCustomer", id);
