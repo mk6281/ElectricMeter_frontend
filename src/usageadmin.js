@@ -254,7 +254,7 @@ function Usageadmin() {
   useEffect(() => {
     if (customerId) {
       axios
-        .get(`http://localhost:8081/usage/${customerId}`)
+        .get(`https://electricmeter-backend-1.onrender.com/usage/${customerId}`)
         .then((res) => {
           if (res.data.status === "OK") {
             setUsage(res.data.data);
