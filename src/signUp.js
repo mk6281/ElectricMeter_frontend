@@ -45,7 +45,7 @@ if(errors.name === "" && errors.email === "" && errors.password === ""){
       <form action="" onSubmit={handleSubmit}>
         <div className="mb-3 ">
           <label htmlFor='name'>Name</label>
-          <input type="text"  onChange={handleInput}  className="form-control rounded-0" name = 'name'placeholder="Enter email"  />
+          <input type="text"  onChange={handleInput}  className="form-control rounded-0" name = 'name'placeholder="Enter name"  />
           {errors.name && <span className='text-danger'>{errors.name}</span>}
         </div>
         <div className="mb-3 ">
