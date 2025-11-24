@@ -9,7 +9,7 @@ function Billingadmin() {
   const [isConnected, setIsConnected] = useState(false);
 
   useEffect(() => {
-    axios.get(`http://localhost:8081/getUser/${id}`)
+    axios.get(`https://electricmeter-backend-1.onrender.com/getUser/${id}`)
       .then((res) => {
         if (res.data.status === "Found") {
           setUser(res.data.user);
@@ -24,7 +24,7 @@ function Billingadmin() {
     const newState = !isConnected;
     setIsConnected(newState);
 
-    axios.post("http://localhost:8081/toggleDevice", {
+    axios.post("https://electricmeter-backend-1.onrender.com/toggleDevice", {
       customerId: id,
       state: newState ? 1 : 0
     })
