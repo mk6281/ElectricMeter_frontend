@@ -94,7 +94,7 @@ function App() {
           <Route
             path="/homecust"
             element={
-              <PrivateRoute roles={['customer']}>
+              <PrivateRoute roles={['admin']}>
                 <Homecust />
               </PrivateRoute>
             }
@@ -102,7 +102,7 @@ function App() {
           <Route
             path="/homecust/:id"
             element={
-              <PrivateRoute roles={['customer']}>
+              <PrivateRoute roles={['admin']}>
                 <Homecust />
               </PrivateRoute>
             }
