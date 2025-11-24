@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+  import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import Validation from './signupvalidation';
 import axios from 'axios';
@@ -29,7 +29,7 @@ function SignUp() {
       validationErrors.password === ""
     ) {
       axios
-        .post('https://electricmeter-backend.onrender.com/signup', values)
+        .post('https://electricmeter-backend-1.onrender.com/signup', values)
         .then(res => navigate('/login'))
         .catch(err => console.log(err));
     }
