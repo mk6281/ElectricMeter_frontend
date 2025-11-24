@@ -29,7 +29,7 @@ function SignUp() {
       validationErrors.password === ""
     ) {
       axios
-        .post('https://electricmeter-backend-1.onrender.com/signup', values)
+        .post('https://electricmeter-backend-1.onrender.com/signup', values) 
         .then(res => navigate('/login'))
         .catch(err => console.log(err));
     }
