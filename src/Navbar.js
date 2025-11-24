@@ -430,7 +430,7 @@ function Navbar() {
   useEffect(() => {
     const storedUser = JSON.parse(localStorage.getItem('user'));
     if (storedUser) {
-      axios.get(`http://localhost:8081/getUser/${storedUser.id}`)
+      axios.get(`https://electricmeter-backend-1.onrender.com/getUser/${storedUser.id}`)
         .then(res => {
           if (res.data.status === 'Found') {
             setUser(res.data.user);
