@@ -167,7 +167,7 @@ function Billing() {
   useEffect(() => {
     if (!userId) return;
 
-    axios.get(`http://localhost:8081/getUser/${userId}`)
+    axios.get(`https://electricmeter-backend-1.onrender.com/getUser/${userId}`)
       .then(res => {
         if (res.data.status === "Found") {
           setUser(res.data.user);
