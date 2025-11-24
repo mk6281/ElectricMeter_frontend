@@ -43,7 +43,7 @@ function Registration() {
     e.preventDefault(); // Prevent page reload
 
     try {
-      const res = await axios.post('http://localhost:8081/signup', {
+      const res = await axios.post('https://electricmeter-backend-1.onrender.com/signup', {
         name,
         email,
         password
