@@ -510,7 +510,7 @@ function Usage() {
   useEffect(() => {
     if (userId) {
       axios
-        .get(`http://localhost:8081/usage/${userId}`)
+        .get(`https://electricmeter-backend-1.onrender.com/usage/${userId}`)
         .then((res) => {
           if (res.data.status === "OK") {
             const fixedData = res.data.data.map((row) => ({
