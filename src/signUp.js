@@ -157,7 +157,7 @@ function SignUp() {
               type="text"
               name="name"
               className="signup-input"
-              placeholder="Enter full name"
+              placeholder="Enter not taken name"
               onChange={handleInput}
             />
             {errors.name && <p className="error-text">{errors.name}</p>}
