@@ -455,7 +455,7 @@ function Usageadmin() {
   const customerId = localStorage.getItem("selectedCustomer");
   const [usage, setUsage] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 20;
+  const rowsPerPage = 5;
 
   useEffect(() => {
     if (customerId) {
