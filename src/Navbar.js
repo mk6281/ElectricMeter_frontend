@@ -422,272 +422,248 @@ function Navbar() {
   const [user, setUser] = useState(null);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const navigate = useNavigate();
-
   const avatarRef = useRef(null);
   const dropdownRef = useRef(null);
+  const navigate = useNavigate();
 
   // Fetch User
   useEffect(() => {
-    const storedUser = JSON.parse(localStorage.getItem('user'));
+    const storedUser = JSON.parse(localStorage.getItem("user"));
     if (storedUser) {
       axios
         .get(`https://electricmeter-backend-1.onrender.com/getUser/${storedUser.id}`)
         .then((res) => {
-          if (res.data.status === 'Found') {
+          if (res.data.status === "Found") {
             setUser(res.data.user);
-            localStorage.setItem('user', JSON.stringify(res.data.user));
+            localStorage.setItem("user", JSON.stringify(res.data.user));
           }
         })
-        .catch((err) => console.log("Fetch user error:", err));
+        .catch((e) => console.log("Error:", e));
     }
   }, []);
 
-  // Click Outside Dropdown
+  // Handle dropdown close on outside click
   useEffect(() => {
-    function handleDocClick(e) {
-      if (!dropdownOpen) return;
-      if (avatarRef.current && avatarRef.current.contains(e.target)) return;
-      if (dropdownRef.current && dropdownRef.current.contains(e.target)) return;
-      setDropdownOpen(false);
+    function handler(e) {
+      if (
+        dropdownOpen &&
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target) &&
+        avatarRef.current &&
+        !avatarRef.current.contains(e.target)
+      ) {
+        setDropdownOpen(false);
+      }
     }
-    document.addEventListener('mousedown', handleDocClick);
-    return () => document.removeEventListener('mousedown', handleDocClick);
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, [dropdownOpen]);
 
   const handleSignOut = () => {
-    localStorage.removeItem('user');
+    localStorage.removeItem("user");
     setUser(null);
-    navigate('/');
+    navigate("/");
   };
 
-  const toggleDropdown = () => {
-    setDropdownOpen((prev) => !prev);
-    setMobileMenuOpen(false);
-  };
+  const getInitials = (name) =>
+    name ? name.split(" ").map((x) => x[0].toUpperCase()).join("") : "";
 
-  const toggleMobileMenu = () => {
-    setMobileMenuOpen((prev) => !prev);
-    setDropdownOpen(false);
-  };
-
-  const getUserInitials = (name) =>
-    name ? name.split(' ').map((n) => n[0].toUpperCase()).join('') : '';
-
+  // Dropdown Position
   const computeDropdownPosition = () => {
-    if (!avatarRef.current) return { top: 0, left: 0 };
+    if (!avatarRef.current) return {};
     const rect = avatarRef.current.getBoundingClientRect();
-    return { top: rect.bottom + 8, left: rect.right - 170 };
+    return { top: rect.bottom + 8, left: rect.right - 150 };
   };
 
   const dropdownPos = computeDropdownPosition();
 
   return (
     <>
-      {/* Styles */}
+      {/* STYLES */}
       <style>{`
-        .navbar-container {
+        .navbar {
           display: flex;
           justify-content: space-between;
           align-items: center;
-          padding: 12px 20px;
           background: linear-gradient(90deg, #0A2A66, #1e88e5);
-          color: white;
-          font-size: 18px;
+          padding: 14px 20px;
+          color: #fff;
           position: sticky;
           top: 0;
           z-index: 3000;
-          box-shadow: 0px 4px 15px rgba(0,0,0,0.2);
         }
 
-        .navbar-logo {
+        .logo {
           font-size: 24px;
-          font-weight: 900;
+          font-weight: 800;
           cursor: pointer;
         }
 
-        .navbar-links {
+        .links {
           display: flex;
-          gap: 20px;
+          gap: 25px;
+          align-items: center;
         }
 
-        .navbar-link {
-          color: white;
+        .nav-link {
+          color: #fff;
           text-decoration: none;
+          font-size: 17px;
           padding: 6px 10px;
           border-radius: 6px;
-          transition: 0.2s;
+          transition: .2s;
         }
 
-        .navbar-link:hover {
+        .nav-link:hover {
           background: rgba(255,255,255,0.15);
         }
 
-        .nav-right {
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          margin-left: auto; /* fixes avatar alignment */
-        }
-
-        .navbar-avatar {
-          width: 40px;
-          height: 40px;
-          background: #ffcc00;
+        .avatar {
+          width: 42px;
+          height: 42px;
           border-radius: 50%;
+          background: #ffd447;
+          color: #000;
           display: flex;
           justify-content: center;
           align-items: center;
           font-weight: bold;
-          color: black;
           cursor: pointer;
-          transition: 0.3s;
+          transition: .25s;
         }
 
-        .navbar-avatar:hover {
-          transform: scale(1.08);
+        .avatar:hover {
+          transform: scale(1.1);
         }
 
-        .mobile-menu-icon {
+        /* MOBILE ICON */
+        .mobile-btn {
           display: none;
-          font-size: 28px;
+          font-size: 30px;
           cursor: pointer;
         }
 
         /* MOBILE MENU */
         .mobile-menu {
-          position: absolute;
-          top: 64px;
-          right: 12px;
-          background: linear-gradient(180deg, #0A2A66, #1e88e5);
-          padding: 15px;
-          border-radius: 12px;
-          width: 180px;
-          color: white;
-          box-shadow: 0 8px 25px rgba(0,0,0,0.2);
-          z-index: 3500;
+          position: fixed;
+          top: 0;
+          right: 0;
+          height: 100vh;
+          width: 240px;
+          background: #0A2A66;
+          padding: 20px;
+          display: flex;
+          flex-direction: column;
+          gap: 15px;
+          transform: translateX(100%);
+          transition: 0.3s ease;
+          z-index: 5000;
         }
 
-        .mobile-link {
+        .mobile-menu.open {
+          transform: translateX(0);
+        }
+
+        .mobile-item {
           color: white;
-          display: block;
-          padding: 10px 0;
           text-decoration: none;
+          font-size: 18px;
+          padding: 12px 0;
+          border-bottom: 1px solid rgba(255,255,255,0.25);
         }
 
-        .mobile-link:hover {
-          color: #ffd447;
+        .mobile-close {
+          font-size: 32px;
+          align-self: flex-end;
+          cursor: pointer;
         }
 
         @media (max-width: 768px) {
-          .navbar-links {
+          .links {
             display: none;
           }
-          .mobile-menu-icon {
+          .mobile-btn {
             display: block;
           }
-        }
-
-        /* DROPDOWN */
-        .dropdown-card {
-          background: white;
-          border-radius: 10px;
-          box-shadow: 0px 8px 30px rgba(0,0,0,0.25);
-          min-width: 160px;
-        }
-
-        .dropdown-item {
-          padding: 12px 14px;
-          cursor: pointer;
-          background: none;
-          border: none;
-          width: 100%;
-          text-align: left;
-        }
-
-        .dropdown-item:hover {
-          background: #f3f4f6;
         }
       `}</style>
 
       {/* NAVBAR */}
-      <nav className="navbar-container">
-        <div className="navbar-logo" onClick={() => navigate('/home')}>
-          NEB Portal
-        </div>
+      <div className="navbar">
+        <div className="logo" onClick={() => navigate("/home")}>NEB Portal</div>
 
-        {/* DESKTOP LINKS */}
-        <div className="navbar-links">
-          <Link className="navbar-link" to="/home">Home</Link>
-
-          {user && (
-            <>
-              <Link className="navbar-link" to={`/home/billing/${user.id}`}>Billing</Link>
-              <Link className="navbar-link" to={`/home/usage/${user.id}`}>Usage</Link>
-            </>
-          )}
-
-          <Link className="navbar-link" to="/home/history">History</Link>
-        </div>
-
-        {/* AVATAR + MOBILE ICON */}
-        <div className="nav-right">
+        {/* Desktop Links */}
+        <div className="links">
+          <Link className="nav-link" to="/home">Home</Link>
+          {user && <>
+            <Link className="nav-link" to={`/home/billing/${user.id}`}>Billing</Link>
+            <Link className="nav-link" to={`/home/usage/${user.id}`}>Usage</Link>
+          </>}
+          <Link className="nav-link" to="/home/history">History</Link>
 
           {user && (
             <div ref={avatarRef}>
-              <div className="navbar-avatar" onClick={toggleDropdown}>
-                {getUserInitials(user.name)}
+              <div className="avatar" onClick={() => setDropdownOpen(!dropdownOpen)}>
+                {getInitials(user.name)}
               </div>
             </div>
           )}
-
-          <div className="mobile-menu-icon" onClick={toggleMobileMenu}>
-            ☰
-          </div>
-
         </div>
-      </nav>
 
-      {/* MOBILE MENU */}
-      {mobileMenuOpen && (
-        <div className="mobile-menu">
-          <Link className="mobile-link" to="/home">Home</Link>
-
-          {user && (
-            <>
-              <Link className="mobile-link" to={`/home/billing/${user.id}`}>Billing</Link>
-              <Link className="mobile-link" to={`/home/usage/${user.id}`}>Usage</Link>
-            </>
-          )}
-
-          <Link className="mobile-link" to="/home/history">History</Link>
-
-          {user && (
-            <button
-              className="mobile-link"
-              onClick={handleSignOut}
-              style={{ background: "none", border: 0, padding: 0 }}
-            >
-              Sign Out
-            </button>
-          )}
+        {/* Mobile Button */}
+        <div className="mobile-btn" onClick={() => setMobileMenuOpen(true)}>
+          ☰
         </div>
-      )}
+      </div>
 
-      {/* DROPDOWN */}
+      {/* Mobile Menu */}
+      <div className={`mobile-menu ${mobileMenuOpen ? "open" : ""}`}>
+        <div className="mobile-close" onClick={() => setMobileMenuOpen(false)}>×</div>
+
+        <Link className="mobile-item" to="/home" onClick={() => setMobileMenuOpen(false)}>Home</Link>
+
+        {user && <>
+          <Link className="mobile-item" to={`/home/billing/${user.id}`} onClick={() => setMobileMenuOpen(false)}>Billing</Link>
+          <Link className="mobile-item" to={`/home/usage/${user.id}`} onClick={() => setMobileMenuOpen(false)}>Usage</Link>
+        </>}
+
+        <Link className="mobile-item" to="/home/history" onClick={() => setMobileMenuOpen(false)}>History</Link>
+
+        {user && (
+          <button onClick={handleSignOut} className="mobile-item" style={{ background: "none", border: 0, textAlign: "left" }}>
+            Sign Out
+          </button>
+        )}
+      </div>
+
+      {/* Avatar Dropdown */}
       {dropdownOpen && user &&
         ReactDOM.createPortal(
           <div
             ref={dropdownRef}
-            className="dropdown-card"
             style={{
-              position: 'absolute',
+              position: "absolute",
               top: dropdownPos.top,
               left: dropdownPos.left,
-              zIndex: 999999999,
+              background: "#fff",
+              borderRadius: "10px",
+              boxShadow: "0 8px 20px rgba(0,0,0,0.25)",
+              width: "140px",
+              padding: "10px 0",
+              zIndex: 99999,
             }}
           >
-            <button className="dropdown-item" onClick={handleSignOut}>
+            <button
+              onClick={handleSignOut}
+              style={{
+                width: "100%",
+                padding: "10px",
+                border: "none",
+                background: "none",
+                textAlign: "left",
+                cursor: "pointer"
+              }}
+            >
               Sign Out
             </button>
           </div>,
