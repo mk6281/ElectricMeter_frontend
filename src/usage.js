@@ -686,7 +686,6 @@
 // }
 
 // export default Usage;
-
 import React, { useEffect, useState } from "react";
 import Navbar from "./Navbar";
 import axios from "axios";
@@ -707,9 +706,12 @@ function Usage() {
   const { id } = useParams();
   const userId = id || JSON.parse(localStorage.getItem("user"))?.id;
   const [usage, setUsage] = useState([]);
+  const [filteredUsage, setFilteredUsage] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 20;
+  const [selectedDate, setSelectedDate] = useState("");
+  const rowsPerPage = 25;
 
+  // Fetch data
   useEffect(() => {
     if (userId) {
       axios
@@ -722,20 +724,33 @@ function Usage() {
                 imported: parseFloat(row.imported) || 0,
                 exported: parseFloat(row.exported) || 0
               }))
-              // Sort by date ascending
               .sort((a, b) => new Date(a.date) - new Date(b.date));
             setUsage(fixedData);
+            setFilteredUsage(fixedData); // default: all rows
           }
         })
         .catch((err) => console.log("Error fetching usage:", err));
     }
   }, [userId]);
 
+  // Filter by date
+  const filterByDate = (dateValue) => {
+    setSelectedDate(dateValue);
+    if (!dateValue) {
+      setFilteredUsage(usage);
+      setCurrentPage(1);
+      return;
+    }
+    const filtered = usage.filter((row) => row.date.startsWith(dateValue));
+    setFilteredUsage(filtered);
+    setCurrentPage(1);
+  };
+
   // Pagination calculations
-  const totalPages = Math.ceil(usage.length / rowsPerPage);
+  const totalPages = Math.ceil(filteredUsage.length / rowsPerPage);
   const indexOfLastRow = currentPage * rowsPerPage;
   const indexOfFirstRow = indexOfLastRow - rowsPerPage;
-  const currentRows = usage.slice(indexOfFirstRow, indexOfLastRow);
+  const currentRows = filteredUsage.slice(indexOfFirstRow, indexOfLastRow);
 
   const goToPage = (pageNumber) => {
     if (pageNumber < 1 || pageNumber > totalPages) return;
@@ -769,6 +784,25 @@ function Usage() {
         {/* TABLE CARD */}
         <div className="usage-card">
           <h3>Usage Table</h3>
+
+          {usage.length > 0 && (
+            <div style={{ marginBottom: "15px", textAlign: "center" }}>
+              <label style={{ fontWeight: "700", marginRight: "10px", color: "#0A2A66" }}>
+                Filter by Date:
+              </label>
+              <input
+                type="date"
+                value={selectedDate}
+                onChange={(e) => filterByDate(e.target.value)}
+                style={{
+                  padding: "6px 10px",
+                  borderRadius: "6px",
+                  border: "1px solid #1e3a8a",
+                  cursor: "pointer"
+                }}
+              />
+            </div>
+          )}
 
           {usage.length === 0 ? (
             <p>No records found.</p>
@@ -815,7 +849,7 @@ function Usage() {
         <div className="usage-card">
           <h3>Daily Imported vs Exported</h3>
           <div className="chart-container">
-            <LineChart width={700} height={300} data={usage}>
+            <LineChart width={700} height={300} data={filteredUsage}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis />
@@ -831,7 +865,7 @@ function Usage() {
         <div className="usage-card">
           <h3>Daily Usage (Bar Chart)</h3>
           <div className="chart-container">
-            <BarChart width={700} height={300} data={usage}>
+            <BarChart width={700} height={300} data={filteredUsage}>
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis dataKey="date" />
               <YAxis />
@@ -848,4 +882,3 @@ function Usage() {
 }
 
 export default Usage;
-
