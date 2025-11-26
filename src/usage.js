@@ -708,7 +708,7 @@ function Usage() {
   const userId = id || JSON.parse(localStorage.getItem("user"))?.id;
   const [usage, setUsage] = useState([]);
   const [currentPage, setCurrentPage] = useState(1);
-  const rowsPerPage = 25;
+  const rowsPerPage = 20;
 
   useEffect(() => {
     if (userId) {
